@@ -1,0 +1,92 @@
+body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background: #FFF9FA; 
+    color: #2D3748; 
+    -webkit-tap-highlight-color: transparent; 
+    transition: background 0.5s ease; 
+}
+
+.glass { 
+    background: rgba(255, 255, 255, 0.88); 
+    backdrop-filter: blur(15px); 
+    border: 1px solid rgba(255, 255, 255, 0.7); 
+}
+
+.shadow-premium { 
+    box-shadow: 0 20px 40px -10px rgba(255, 133, 162, 0.15); 
+}
+
+.progress-fill { 
+    transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1); 
+    background: linear-gradient(90deg, #FF85A2, #B794F4); 
+}
+
+.priority-pulse { 
+    border: 2px solid #FF85A2; 
+    animation: pulse-border 2s infinite; 
+}
+
+@keyframes pulse-border { 
+    0% { border-color: #FF85A2; } 
+    50% { border-color: #FFE4E6; } 
+    100% { border-color: #FF85A2; } 
+}
+
+.tab-btn { 
+    position: relative; 
+    transition: all 0.3s ease; 
+}
+
+.tab-btn.active { 
+    color: #FF85A2; 
+    transform: scale(1.1); 
+}
+
+.tab-btn.active::after { 
+    content: ''; 
+    position: absolute; 
+    bottom: -8px; 
+    left: 25%; 
+    width: 50%; 
+    height: 4px; 
+    background: #FF85A2; 
+    border-radius: 10px; 
+}
+
+.day-btn {
+    transition: all 0.2s ease;
+}
+
+.day-btn.active-day {
+    background-color: #3B82F6 !important;
+    color: white !important;
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    border-color: #3B82F6 !important;
+}
+
+/* Animação Modal de Recompensa (Engrenagem) */
+.gear-spin {
+    display: inline-block;
+    animation: spin-soft 4s linear infinite;
+}
+
+@keyframes spin-soft {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Animação suave para o Modal de Pausa/Respiro */
+.breather-pulse {
+    animation: breathe 4s infinite ease-in-out;
+}
+
+@keyframes breathe {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+    50% { transform: scale(1.15); box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+::-webkit-scrollbar { 
+    display: none; 
+}
