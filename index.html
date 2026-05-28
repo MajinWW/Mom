@@ -1,309 +1,236 @@
-<!DOCTYPE html>  <html lang="pt-br">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
-    <title>MomCare Ultra v4</title>  
-    <script src="https://cdn.tailwindcss.com"></script>  
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">  
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>  
-    <style>  
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #FFF9FA; color: #2D3748; -webkit-tap-highlight-color: transparent; transition: background 0.5s ease; }  
-        .glass { background: rgba(255, 255, 255, 0.88); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.7); }  
-        .shadow-premium { box-shadow: 0 20px 40px -10px rgba(255, 133, 162, 0.15); }  
-        .progress-fill { transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1); background: linear-gradient(90deg, #FF85A2, #B794F4); }  
-        .priority-pulse { border: 2px solid #FF85A2; animation: pulse-border 2s infinite; }  
-        @keyframes pulse-border { 0% { border-color: #FF85A2; } 50% { border-color: #FFE4E6; } 100% { border-color: #FF85A2; } }  
-        .tab-btn { position: relative; transition: all 0.3s ease; }  
-        .tab-btn.active { color: #FF85A2; transform: scale(1.1); }  
-        .tab-btn.active::after { content: ''; position: absolute; bottom: -8px; left: 25%; width: 50%; height: 4px; background: #FF85A2; border-radius: 10px; }  
-        ::-webkit-scrollbar { display: none; }  
-    </style>  
-</head>  
-<body class="min-h-screen pb-28">  
-<audio id="notif-sound" loop src="https://assets.mixkit.co/active_storage/sfx/2855/2855-preview.mp3"></audio>  
-<audio id="done-sound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>  
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MomCare Ultra v4</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body class="min-h-screen pb-28">
+    <audio id="notif-sound" loop src="https://assets.mixkit.co/active_storage/sfx/2855/2855-preview.mp3"></audio>
+    <audio id="done-sound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
 
-<div id="unlock-screen" class="fixed inset-0 bg-white z-[300] flex flex-col items-center justify-center p-10 text-center transition-all duration-700">  
-    <div class="relative mb-8">  
-        <div class="w-32 h-32 bg-pink-50 rounded-[3rem] rotate-12 absolute animate-pulse"></div>  
-        <div class="w-32 h-32 bg-pink-100 rounded-[3rem] flex items-center justify-center relative shadow-inner">  
-            <span class="text-6xl">✨</span>  
-        </div>  
-    </div>  
-    <h1 class="text-3xl font-extrabold text-gray-900 mb-2 tracking-tighter">MomCare Ultra</h1>  
-    <p class="text-gray-400 mb-10 text-sm leading-relaxed">Sua carga mental organizada em um só lugar.</p>  
-    <button onclick="startApp()" class="w-full max-w-xs bg-gray-900 text-white py-5 rounded-[2rem] font-bold shadow-2xl active:scale-95 transition-transform uppercase tracking-widest text-xs">  
-        Aqui Mamãe  
-    </button>  
-</div>  
+    <!-- Tela de Desbloqueio -->
+    <div id="unlock-screen" class="fixed inset-0 bg-white z-[300] flex flex-col items-center justify-center p-10 text-center transition-all duration-700">
+        <div class="relative mb-8">
+            <div class="w-32 h-32 bg-pink-50 rounded-[3rem] rotate-12 absolute animate-pulse"></div>
+            <div class="w-32 h-32 bg-pink-100 rounded-[3rem] flex items-center justify-center relative shadow-inner">
+                <span class="text-6xl">✨</span>
+            </div>
+        </div>
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 tracking-tighter">MomCare Ultra</h1>
+        <p class="text-gray-400 mb-10 text-sm leading-relaxed">Sua carga mental organizada em um só lugar.</p>
+        <button onclick="startApp()" class="w-full max-w-xs bg-gray-900 text-white py-5 rounded-[2rem] font-bold shadow-2xl active:scale-95 transition-transform uppercase tracking-widest text-xs">
+            Aqui Mamãe
+        </button>
+    </div>
 
-<header class="p-8 sticky top-0 z-50 bg-[#FFF9FA]/90 backdrop-blur-lg border-b border-pink-50/50">  
-    <div class="flex justify-between items-center mb-8 max-w-lg mx-auto">  
-        <div class="flex items-center gap-3">  
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-400 to-pink-200 flex items-center justify-center text-white shadow-lg">  
-                <span id="user-icon">🌸</span>  
-            </div>  
-            <div>  
-                <h2 id="greeting-txt" class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bom dia</h2>  
-                <h1 class="text-xl font-extrabold text-gray-900 leading-tight">Olá, Mamãe</h1>  
-            </div>  
-        </div>  
-        <div class="flex flex-col items-end">  
-            <span id="top-clock" class="text-2xl font-black text-gray-900 tracking-tighter">00:00</span>  
-            <span class="text-[9px] font-bold text-pink-400 uppercase tracking-widest" id="top-date">Sexta, 03 Abr</span>  
-        </div>  
-    </div>  
-      
-    <nav class="flex justify-around items-center max-w-md mx-auto relative">  
-        <button onclick="changeTab('tasks')" id="btn-tasks" class="tab-btn active text-xs font-black uppercase tracking-widest">📅 Rotina</button>  
-        <button onclick="changeTab('notes')" id="btn-notes" class="tab-btn text-xs font-black uppercase tracking-widest">📝 Notas</button>  
-        <button onclick="changeTab('stats')" id="btn-stats" class="tab-btn text-xs font-black uppercase tracking-widest">📊 Metas</button>  
-    </nav>  
-</header>  
+    <!-- Cabeçalho -->
+    <header class="p-8 sticky top-0 z-50 bg-[#FFF9FA]/90 backdrop-blur-lg border-b border-pink-50/50">
+        <div class="flex justify-between items-center mb-8 max-w-lg mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-400 to-pink-200 flex items-center justify-center text-white shadow-lg">
+                    <span id="user-icon">🌸</span>
+                </div>
+                <div>
+                    <h2 id="greeting-txt" class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bom dia</h2>
+                    <h1 class="text-xl font-extrabold text-gray-900 leading-tight">Olá, Mamãe</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Botão manual de Autocuidado no cabeçalho -->
+                <button onclick="openRewardModal()" class="w-10 h-10 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center shadow-sm border border-blue-100 text-lg active:scale-95 transition-transform">
+                    💧
+                </button>
+                <div class="flex flex-col items-end">
+                    <span id="top-clock" class="text-2xl font-black text-gray-900 tracking-tighter">00:00</span>
+                    <span class="text-[9px] font-bold text-pink-400 uppercase tracking-widest" id="top-date">Sexta, 03 Abr</span>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="flex justify-around items-center max-w-md mx-auto relative">
+            <button onclick="changeTab('tasks')" id="btn-tasks" class="tab-btn active text-xs font-black uppercase tracking-widest">📅 Rotina</button>
+            <button onclick="changeTab('notes')" id="btn-notes" class="tab-btn text-xs font-black uppercase tracking-widest">📝 Notas</button>
+            <button onclick="changeTab('stats')" id="btn-stats" class="tab-btn text-xs font-black uppercase tracking-widest">📊 Metas</button>
+        </nav>
+    </header>
 
-<main class="max-w-lg mx-auto px-6 py-6 space-y-8">  
-      
-    <section id="tab-tasks-content" class="space-y-6">  
-        <div class="glass p-6 rounded-[2.5rem] shadow-premium">  
-            <div class="flex justify-between items-center mb-4">  
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Energia do Dia</span>  
-                <span id="perc-num" class="text-2xl font-black text-pink-500">0%</span>  
-            </div>  
-            <div class="w-full bg-pink-50 h-4 rounded-full overflow-hidden p-1 shadow-inner">  
-                <div id="perc-bar" class="progress-fill h-full rounded-full w-0"></div>  
-            </div>  
-        </div>  
-        <div id="list-tasks" class="space-y-4"></div>  
-    </section>  
+    <!-- Conteúdo Principal -->
+    <main class="max-w-lg mx-auto px-6 py-6 space-y-8">
+        
+        <!-- Aba: Tarefas / Rotina -->
+        <section id="tab-tasks-content" class="space-y-6">
+            
+            <!-- Progresso de Tarefas -->
+            <div class="glass p-6 rounded-[2.5rem] shadow-premium">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Energia de Hoje</span>
+                    <span id="perc-num" class="text-2xl font-black text-pink-500">0%</span>
+                </div>
+                <div class="w-full bg-pink-50 h-4 rounded-full overflow-hidden p-1 shadow-inner">
+                    <div id="perc-bar" class="progress-fill h-full rounded-full w-0"></div>
+                </div>
+            </div>
+            
+            <div id="list-tasks" class="space-y-4"></div>
 
-    <section id="tab-notes-content" class="hidden space-y-6 animate-item">  
-        <div class="flex justify-between items-center px-2">  
-            <h3 class="text-lg font-extrabold text-gray-800 tracking-tight">Bloco de Notas</h3>  
-            <span class="text-[10px] font-bold text-pink-400 uppercase tracking-widest" id="note-count">0 itens</span>  
-        </div>  
-        <div id="list-notes" class="grid grid-cols-1 gap-4"></div>  
-    </section>  
+            <div class="text-center mt-6">
+                <button id="btn-toggle-completed" onclick="toggleCompleted()" class="hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white border border-gray-200 px-5 py-3 rounded-full mx-auto active:scale-95 transition-all shadow-sm">
+                    Mostrar Concluídas
+                </button>
+            </div>
 
-    <section id="tab-stats-content" class="hidden space-y-6 animate-item">  
-        <div class="glass p-8 rounded-[2.5rem] text-center shadow-premium">  
-            <div class="text-5xl mb-4">🏆</div>  
-            <h3 class="text-xl font-extrabold text-gray-900 mb-2">Sua Produtividade</h3>  
-            <p class="text-sm text-gray-400 mb-6">Você concluiu <span id="total-done-week" class="text-pink-500 font-bold">0</span> tarefas esta semana!</p>  
-            <div class="grid grid-cols-2 gap-4">  
-                <div class="bg-pink-50 p-4 rounded-3xl">  
-                    <span class="block text-xl font-black text-pink-500" id="stat-pending">0</span>  
-                    <span class="text-[9px] font-bold text-gray-400 uppercase">Pendentes</span>  
-                </div>  
-                <div class="bg-blue-50 p-4 rounded-3xl">  
-                    <span class="block text-xl font-black text-blue-500" id="stat-done">0</span>  
-                    <span class="text-[9px] font-bold text-gray-400 uppercase">Feitas</span>  
-                </div>  
-            </div>  
-        </div>  
-    </section>  
-</main>  
+            <div id="list-tasks-completed" class="hidden space-y-4 opacity-70"></div>
+        </section>
 
-<div id="notif-modal" class="fixed inset-0 bg-white/95 z-[500] hidden items-center justify-center p-10 text-center transition-all">  
-    <div class="max-w-xs w-full">  
-        <div class="w-24 h-24 bg-pink-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl animate-bounce">  
-            <span class="text-4xl text-white">🔔</span>  
-        </div>  
-        <h2 id="notif-title" class="text-3xl font-extrabold text-gray-900 mb-10 tracking-tighter">Tarefa Agora!</h2>  
-        <button onclick="dismissNotif()" class="w-full bg-gray-900 text-white py-6 rounded-[2rem] font-bold shadow-xl active:scale-95 transition-all">ESTOU CIENTE</button>  
-    </div>  
-</div>  
+        <!-- Aba: Notas -->
+        <section id="tab-notes-content" class="hidden space-y-6 animate-item">
+            <div class="flex justify-between items-center px-2">
+                <h3 class="text-lg font-extrabold text-gray-800 tracking-tight">Bloco de Notas</h3>
+                <span class="text-[10px] font-bold text-pink-400 uppercase tracking-widest" id="note-count">0 itens</span>
+            </div>
+            <div id="list-notes" class="grid grid-cols-1 gap-4"></div>
+        </section>
 
-<button onclick="openInput()" class="fixed bottom-10 right-10 w-18 h-18 w-16 h-16 bg-pink-500 text-white rounded-[1.8rem] flex items-center justify-center text-4xl z-[100] shadow-2xl active:scale-90 transition-transform font-bold">  
-    +  
-</button>  
+        <!-- Aba: Estatísticas -->
+        <section id="tab-stats-content" class="hidden space-y-6 animate-item">
+            <div class="glass p-8 rounded-[2.5rem] text-center shadow-premium">
+                <div class="text-5xl mb-4">🏆</div>
+                <h3 class="text-xl font-extrabold text-gray-900 mb-2">Sua Produtividade</h3>
+                <p class="text-sm text-gray-400 mb-6">Você concluiu <span id="total-done-week" class="text-pink-500 font-bold">0</span> tarefas nos últimos 7 dias!</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-pink-50 p-4 rounded-3xl">
+                        <span class="block text-xl font-black text-pink-500" id="stat-pending">0</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase">Pendentes Hoje</span>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-3xl">
+                        <span class="block text-xl font-black text-blue-500" id="stat-done">0</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase">Feitas Hoje</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-<div id="modal-form" class="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-[200] hidden items-end sm:items-center justify-center">  
-    <div class="bg-white w-full max-w-md rounded-t-[3.5rem] p-10 shadow-2xl animate-item">  
-        <div class="w-16 h-1.5 bg-gray-100 rounded-full mx-auto mb-8"></div>  
-          
-        <div id="fields-task">  
-            <h3 class="text-2xl font-black text-gray-900 mb-8 tracking-tighter">Nova Atividade</h3>  
-            <input type="text" id="in-name" placeholder="O que precisa ser feito?" class="w-full bg-gray-50 border-none rounded-2xl p-5 mb-5 font-bold outline-none focus:ring-2 focus:ring-pink-300">  
-            <div class="grid grid-cols-2 gap-5 mb-5">  
-                <input type="time" id="in-time" class="w-full bg-gray-50 border-none rounded-2xl p-5 font-black text-pink-500 outline-none">  
-                <select id="in-cat" class="w-full bg-gray-50 border-none rounded-2xl p-5 text-gray-500 font-bold outline-none">  
-                    <option value="casa">Casa 🏠</option>  
-                    <option value="filhos">Filhos 👶</option>  
-                    <option value="eu">Pessoal 🌸</option>  
-                </select>  
-            </div>  
-            <label class="flex items-center gap-3 px-2 cursor-pointer">  
-                <input type="checkbox" id="in-priority" class="w-5 h-5 accent-pink-500">  
-                <span class="text-sm font-bold text-gray-500">Marcar como Importante ✨</span>  
-            </label>  
-        </div>  
+    <!-- NOVO: Modal Engrenagem do Autocuidado (Aparece após tarefa concluída) -->
+    <div id="reward-modal" class="fixed inset-0 bg-gray-900/30 backdrop-blur-sm z-[400] hidden items-end sm:items-center justify-center transition-all">
+        <div class="bg-white w-full max-w-md rounded-t-[3.5rem] p-10 shadow-2xl animate-item text-center">
+            <div class="w-16 h-1.5 bg-gray-100 rounded-full mx-auto mb-6"></div>
+            
+            <div class="text-6xl mb-4 gear-spin">⚙️</div>
+            <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tighter">Tarefa Concluída!</h3>
+            <p class="text-sm font-bold text-gray-400 mb-8 leading-relaxed">A engrenagem do autocuidado foi ativada.<br>Que tal um momento só seu?</p>
+            
+            <!-- Água -->
+            <div class="bg-blue-50 p-5 rounded-3xl mb-5">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-bold text-gray-700">Beba um copo de Água</span>
+                    <span id="water-count-text" class="text-xs font-black text-blue-500 bg-white px-2 py-1 rounded-full shadow-sm">0/8 copos</span>
+                </div>
+                <div class="flex justify-between px-1" id="water-glasses-container">
+                    <!-- Gerado via JS -->
+                </div>
+            </div>
 
-        <div id="fields-note" class="hidden">  
-            <h3 class="text-2xl font-black text-gray-900 mb-8 tracking-tighter">Anotação</h3>  
-            <textarea id="in-note" rows="5" placeholder="Lista de compras, lembrete ou pensamento..." class="w-full bg-gray-50 border-none rounded-2xl p-5 font-bold outline-none resize-none mb-5 focus:ring-2 focus:ring-pink-300"></textarea>  
-        </div>  
+            <!-- Pausa -->
+            <button onclick="openBreather()" class="w-full bg-blue-500 text-white py-5 rounded-[1.8rem] font-black shadow-xl shadow-blue-200 mb-4 active:scale-95 transition-all text-sm tracking-wider uppercase">
+                🧘‍♀️ Pausa de 5 Minutos
+            </button>
 
-        <div class="flex gap-4 mt-10">  
-            <button onclick="closeInput()" class="flex-1 py-5 text-gray-400 font-bold uppercase text-[10px] tracking-widest">Sair</button>  
-            <button onclick="handleSave()" class="flex-1 bg-pink-500 text-white py-5 rounded-[1.8rem] font-black shadow-xl shadow-pink-200">Salvar</button>  
-        </div>  
-    </div>  
-</div>  
+            <!-- Fechar -->
+            <button onclick="closeRewardModal()" class="w-full py-4 text-gray-400 font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">
+                Continuar Rotina
+            </button>
+        </div>
+    </div>
 
-<script>  
-    let appData = JSON.parse(localStorage.getItem('momcare_ultra_v4')) || { tasks: [], notes: [], totalDone: 0 };  
-    let activeTab = 'tasks';  
-    let audioActive = false;  
+    <!-- Modal Pausa/Respiro -->
+    <div id="breather-modal" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[600] hidden flex-col items-center justify-center p-10 text-center transition-all duration-500">
+        <div class="w-40 h-40 bg-gradient-to-tr from-blue-100 to-pink-100 rounded-full flex items-center justify-center mb-10 breather-pulse shadow-inner border border-white">
+            <span class="text-6xl">🧘‍♀️</span>
+        </div>
+        <h2 class="text-6xl font-black text-gray-900 mb-6 tracking-tighter" id="breather-timer">05:00</h2>
+        <p class="text-gray-500 mb-12 text-lg leading-relaxed font-bold px-4 italic" id="breather-quote">"Respire fundo. Você está fazendo um trabalho incrível."</p>
+        <button onclick="closeBreather()" class="w-full max-w-xs bg-gray-900 text-white py-5 rounded-[2rem] font-bold shadow-2xl active:scale-95 transition-all tracking-widest text-xs uppercase">
+            Encerrar Pausa
+        </button>
+    </div>
 
-    function startApp() {  
-        document.querySelectorAll('audio').forEach(a => { a.play().then(()=> {a.pause(); a.currentTime=0;}) });  
-        audioActive = true;  
-        document.getElementById('unlock-screen').classList.add('opacity-0', 'pointer-events-none');  
-        render();  
-    }  
+    <!-- Modal de Notificação Alarme -->
+    <div id="notif-modal" class="fixed inset-0 bg-white/95 z-[500] hidden items-center justify-center p-10 text-center transition-all">
+        <div class="max-w-xs w-full">
+            <div class="w-24 h-24 bg-pink-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl animate-bounce">
+                <span class="text-4xl text-white">🔔</span>
+            </div>
+            <h2 id="notif-title" class="text-3xl font-extrabold text-gray-900 mb-10 tracking-tighter">Tarefa Agora!</h2>
+            <button onclick="dismissNotif()" class="w-full bg-gray-900 text-white py-6 rounded-[2rem] font-bold shadow-xl active:scale-95 transition-all">ESTOU CIENTE</button>
+        </div>
+    </div>
 
-    function changeTab(tab) {  
-        activeTab = tab;  
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
-        document.getElementById('btn-'+tab).classList.add('active');  
-          
-        document.getElementById('tab-tasks-content').classList.toggle('hidden', tab !== 'tasks');  
-        document.getElementById('tab-notes-content').classList.toggle('hidden', tab !== 'notes');  
-        document.getElementById('tab-stats-content').classList.toggle('hidden', tab !== 'stats');  
-        render();  
-    }  
+    <!-- Botão Flutuante (Nova Tarefa/Nota) -->
+    <button onclick="openInput()" class="fixed bottom-10 right-10 w-16 h-16 bg-pink-500 text-white rounded-[1.8rem] flex items-center justify-center text-4xl z-[100] shadow-2xl active:scale-90 transition-transform font-bold">
+        +
+    </button>
 
-    function updateTime() {  
-        const now = new Date();  
-        const tStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });  
-        document.getElementById('top-clock').innerText = tStr;  
-        document.getElementById('top-date').innerText = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });  
+    <!-- Modal de Formulário -->
+    <div id="modal-form" class="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-[200] hidden items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-[3.5rem] p-10 shadow-2xl animate-item max-h-[90vh] overflow-y-auto">
+            <div class="w-16 h-1.5 bg-gray-100 rounded-full mx-auto mb-8"></div>
+            
+            <input type="hidden" id="edit-task-id" value="">
 
-        // Greeting  
-        const h = now.getHours();  
-        const gTxt = h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite";  
-        document.getElementById('greeting-txt').innerText = gTxt;  
-        document.getElementById('user-icon').innerText = h < 6 || h > 18 ? "🌙" : "🌸";  
+            <div id="fields-task">
+                <h3 id="modal-task-title" class="text-2xl font-black text-gray-900 mb-6 tracking-tighter">Nova Atividade</h3>
+                
+                <input type="text" id="in-name" placeholder="O que precisa ser feito?" class="w-full bg-gray-50 border-none rounded-2xl p-5 mb-4 font-bold outline-none focus:ring-2 focus:ring-pink-300">
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <input type="time" id="in-time" class="w-full bg-gray-50 border-none rounded-2xl p-5 font-black text-pink-500 outline-none">
+                    <select id="in-cat" class="w-full bg-gray-50 border-none rounded-2xl p-5 text-gray-500 font-bold outline-none">
+                        <option value="casa">Casa 🏠</option>
+                        <option value="filhos">Filhos 👶</option>
+                        <option value="eu">Pessoal 🌸</option>
+                    </select>
+                </div>
+                
+                <!-- Seletor de Dias da Semana -->
+                <div class="bg-gray-50 p-5 rounded-2xl mb-4">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">Repetir nos dias:</span>
+                    <div class="flex justify-between items-center gap-1">
+                        <button type="button" onclick="toggleDay(this)" data-day="0" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">D</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="1" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">S</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="2" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">T</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="3" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">Q</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="4" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">Q</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="5" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">S</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="6" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">S</button>
+                    </div>
+                </div>
 
-        // Notification check  
-        appData.tasks.forEach(t => {  
-            if(t.time === tStr && !t.done && !t.alerted) {  
-                triggerNotif(t);  
-            }  
-        });  
-    }  
-    setInterval(updateTime, 1000);  
+                <label class="flex items-center gap-3 px-2 cursor-pointer mt-2">
+                    <input type="checkbox" id="in-priority" class="w-5 h-5 accent-pink-500">
+                    <span class="text-sm font-bold text-gray-500">Marcar como Importante ✨</span>
+                </label>
+            </div>
 
-    function triggerNotif(task) {  
-        document.getElementById('notif-title').innerText = task.name;  
-        document.getElementById('notif-modal').classList.replace('hidden', 'flex');  
-        if(audioActive) document.getElementById('notif-sound').play();  
-        task.alerted = true;  
-        save();  
-    }  
+            <div id="fields-note" class="hidden">
+                <h3 class="text-2xl font-black text-gray-900 mb-8 tracking-tighter">Anotação</h3>
+                <textarea id="in-note" rows="5" placeholder="Lista de compras, lembrete ou pensamento..." class="w-full bg-gray-50 border-none rounded-2xl p-5 font-bold outline-none resize-none mb-5 focus:ring-2 focus:ring-pink-300"></textarea>
+            </div>
 
-    function dismissNotif() {  
-        document.getElementById('notif-modal').classList.replace('flex', 'hidden');  
-        document.getElementById('notif-sound').pause();  
-        render();  
-    }  
-
-    function openInput() {  
-        document.getElementById('modal-form').classList.replace('hidden', 'flex');  
-        document.getElementById('fields-task').classList.toggle('hidden', activeTab !== 'tasks');  
-        document.getElementById('fields-note').classList.toggle('hidden', activeTab !== 'notes');  
-    }  
-
-    function closeInput() { document.getElementById('modal-form').classList.replace('flex', 'hidden'); }  
-
-    function handleSave() {  
-        if(activeTab === 'tasks') {  
-            const name = document.getElementById('in-name').value;  
-            const time = document.getElementById('in-time').value;  
-            const cat = document.getElementById('in-cat').value;  
-            const prio = document.getElementById('in-priority').checked;  
-            if(!name || !time) return;  
-            appData.tasks.push({ id: Date.now(), name, time, cat, prio, done: false, alerted: false });  
-            document.getElementById('in-name').value = '';  
-            document.getElementById('in-priority').checked = false;  
-        } else {  
-            const note = document.getElementById('in-note').value;  
-            if(!note) return;  
-            const colors = ['#FFF5F5', '#F3F0FF', '#EBFBEE', '#FFF9DB'];  
-            appData.notes.push({ id: Date.now(), content: note, color: colors[Math.floor(Math.random()*colors.length)] });  
-            document.getElementById('in-note').value = '';  
-        }  
-        save(); render(); closeInput();  
-    }  
-
-    function toggleTask(id) {  
-        appData.tasks = appData.tasks.map(t => {  
-            if(t.id === id) {  
-                if(!t.done) {  
-                    appData.totalDone++;  
-                    if(audioActive) document.getElementById('done-sound').play();  
-                    confetti({ particleCount: 60, spread: 50, origin: { y: 0.9 }, colors: ['#FF85A2', '#B794F4'] });  
-                }  
-                return {...t, done: !t.done};  
-            }  
-            return t;  
-        });  
-        save(); render();  
-    }  
-
-    function deleteItem(id, type) {  
-        appData[type] = appData[type].filter(i => i.id !== id);  
-        save(); render();  
-    }  
-
-    function save() { localStorage.setItem('momcare_ultra_v4', JSON.stringify(appData)); }  
-
-    function render() {  
-        if(activeTab === 'tasks') {  
-            const container = document.getElementById('list-tasks');  
-            container.innerHTML = '';  
-            appData.tasks.sort((a,b) => a.time.localeCompare(b.time)).forEach(t => {  
-                const card = document.createElement('div');  
-                card.className = `glass p-6 rounded-[2rem] flex items-center justify-between border-l-[10px] ${t.done ? 'border-gray-200 opacity-60' : t.prio ? 'priority-pulse border-pink-400' : 'border-pink-300'} shadow-soft transition-all active:scale-95`;  
-                card.innerHTML = `  
-                    <div onclick="toggleTask(${t.id})" class="flex-1">  
-                        <div class="flex items-center gap-3">  
-                            <span class="text-xs font-black text-pink-500">${t.time}</span>  
-                            <h4 class="font-bold text-gray-800 ${t.done ? 'line-through' : ''}">${t.prio ? '⭐ ' : ''}${t.name}</h4>  
-                        </div>  
-                    </div>  
-                    <button onclick="deleteItem(${t.id}, 'tasks')" class="text-gray-300 px-2 text-xl">✕</button>  
-                `;  
-                container.appendChild(card);  
-            });  
-              
-            const doneCount = appData.tasks.filter(t => t.done).length;  
-            const prc = appData.tasks.length ? Math.round((doneCount/appData.tasks.length)*100) : 0;  
-            document.getElementById('perc-bar').style.width = prc + '%';  
-            document.getElementById('perc-num').innerText = prc + '%';  
-        }   
-        else if(activeTab === 'notes') {  
-            const container = document.getElementById('list-notes');  
-            container.innerHTML = '';  
-            document.getElementById('note-count').innerText = `${appData.notes.length} notas`;  
-            appData.notes.forEach(n => {  
-                const el = document.createElement('div');  
-                el.className = "p-6 rounded-[2rem] shadow-sm flex justify-between items-start border border-black/5";  
-                el.style.backgroundColor = n.color;  
-                el.innerHTML = `<p class="font-bold text-gray-700 whitespace-pre-wrap flex-1">${n.content}</p>  
-                                <button onclick="deleteItem(${n.id}, 'notes')" class="text-gray-400 opacity-50 ml-4">✕</button>`;  
-                container.appendChild(el);  
-            });  
-        }  
-        else {  
-            document.getElementById('total-done-week').innerText = appData.totalDone;  
-            document.getElementById('stat-pending').innerText = appData.tasks.filter(t => !t.done).length;  
-            document.getElementById('stat-done').innerText = appData.tasks.filter(t => t.done).length;  
-        }  
-    }  
-
-    updateTime();  
-</script>
-
-</body>  
-</html>  
+            <div class="flex gap-4 mt-8">
+                <button onclick="closeInput()" class="flex-1 py-5 text-gray-400 font-bold uppercase text-[10px] tracking-widest">Sair</button>
+                <button onclick="handleSave()" class="flex-1 bg-pink-500 text-white py-5 rounded-[1.8rem] font-black shadow-xl shadow-pink-200">Salvar</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
