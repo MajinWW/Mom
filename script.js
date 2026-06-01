@@ -6,6 +6,7 @@ let audioActive = false;
 let lastCheckedMinute = -1;
 let showCompleted = false;
 let breatherInterval;
+let summaryTimeouts = []; // Controle dos slides do Resumo
 
 function sanitizeHTML(str) {
     const div = document.createElement('div');
@@ -20,7 +21,6 @@ function getTodayString() {
     return localISOTime.split('T')[0];
 }
 
-// Lógica Inteligente de Virada de Dia
 function checkNewDay() {
     const todayStr = getTodayString();
     const todayDOW = new Date().getDay(); 
@@ -42,7 +42,6 @@ function checkNewDay() {
             return t;
         });
         
-        // Zera a água
         appData.water.count = 0;
         appData.water.date = todayStr;
 
@@ -61,7 +60,6 @@ function startApp() {
     document.getElementById('unlock-screen').classList.add('opacity-0', 'pointer-events-none');
     
     checkNewDay(); 
-    renderWater(); // Renderiza água inicial
     render();
 }
 
@@ -100,7 +98,6 @@ function updateTime() {
         
         if (localStorage.getItem('momcare_last_opened') !== todayStr) {
             checkNewDay();
-            renderWater();
             render();
         }
 
@@ -113,17 +110,80 @@ function updateTime() {
 }
 setInterval(updateTime, 1000);
 
+// ====== LÓGICA DO RESUMO DA SUPERMÃE (NOVO) ======
+function openSummary() {
+    // Calcula as estatísticas
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const limitDateStr = sevenDaysAgo.toISOString().split('T')[0];
 
-// ====== MODAL DA ENGRENAGEM (RECOMPENSA) ======
+    const recentTasks = appData.tasks.filter(t => t.date >= limitDateStr);
+    const totalDoneWeek = recentTasks.filter(t => t.done).length;
+    const totalPearls = appData.notes.filter(n => n.isPearl).length;
+
+    // Atualiza os números nos slides
+    document.getElementById('sum-tasks').innerText = totalDoneWeek;
+    document.getElementById('sum-pearls').innerText = totalPearls;
+
+    // Abre o Modal
+    document.getElementById('summary-modal').classList.replace('hidden', 'flex');
+    if(audioActive) document.getElementById('done-sound').play();
+
+    // Reseta todos os slides
+    summaryTimeouts.forEach(clearTimeout);
+    summaryTimeouts = [];
+    [1, 2, 3, 4].forEach(s => hideSlide(s));
+    
+    // Inicia a apresentação cronometrada
+    showSlide(1);
+    
+    summaryTimeouts.push(setTimeout(() => { hideSlide(1); showSlide(2); }, 3500));
+    summaryTimeouts.push(setTimeout(() => { hideSlide(2); showSlide(3); }, 8000));
+    summaryTimeouts.push(setTimeout(() => { 
+        hideSlide(3); 
+        showSlide(4); 
+        // Explosão premium de confetes!
+        confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, zIndex: 9999 });
+    }, 12500));
+}
+
+function showSlide(num) {
+    const el = document.getElementById(`summary-slide-${num}`);
+    el.classList.add('opacity-100');
+    el.classList.remove('opacity-0', 'pointer-events-none');
+}
+
+function hideSlide(num) {
+    const el = document.getElementById(`summary-slide-${num}`);
+    el.classList.remove('opacity-100');
+    el.classList.add('opacity-0', 'pointer-events-none');
+}
+
+function closeSummary() {
+    summaryTimeouts.forEach(clearTimeout);
+    document.getElementById('summary-modal').classList.replace('flex', 'hidden');
+}
+
+
+// ====== MODAL DA RECOMPENSA ======
 function openRewardModal() {
-    renderWater(); // Garante que a água esteja atualizada ao abrir
+    const frases = [
+        "Você é incrível, mamãe! Um gole de água por favor?",
+        "Tudo o que você faz é especial. Momento de pausa!",
+        "Um carinho em forma de descanso para você.",
+        "Você merece esse momento. Beba uma aguinha!",
+        "Você está cuidando de tudo com tanto amor. Agora é sua vez."
+    ];
+    
+    document.getElementById('reward-msg').innerText = frases[Math.floor(Math.random() * frases.length)];
+    
+    renderWater(); 
     document.getElementById('reward-modal').classList.replace('hidden', 'flex');
 }
 
 function closeRewardModal() {
     document.getElementById('reward-modal').classList.replace('flex', 'hidden');
 }
-
 
 // ====== LÓGICA DE ÁGUA ======
 function toggleWater(index) {
@@ -169,7 +229,6 @@ const breatherQuotes = [
 ];
 
 function openBreather() {
-    // Esconde a engrenagem caso ela esteja aberta
     closeRewardModal(); 
     
     document.getElementById('breather-modal').classList.replace('hidden', 'flex');
@@ -202,7 +261,6 @@ function closeBreather() {
     document.getElementById('breather-modal').classList.replace('flex', 'hidden');
 }
 
-
 // ====== INTERAÇÃO DE TAREFAS ======
 function toggleTask(id) {
     let justCompleted = false;
@@ -210,7 +268,6 @@ function toggleTask(id) {
     appData.tasks = appData.tasks.map(t => {
         if (t.id === id) {
             if (!t.done) {
-                // A tarefa está sendo marcada como pronta agora!
                 if (audioActive) document.getElementById('done-sound').play();
                 confetti({ particleCount: 60, spread: 50, origin: { y: 0.9 }, colors: ['#FF85A2', '#B794F4'] });
                 justCompleted = true;
@@ -223,14 +280,12 @@ function toggleTask(id) {
     save(); 
     render();
 
-    // Se concluiu a tarefa, abre a Engrenagem do Autocuidado depois de 1 segundo (pra dar tempo dos confetes)
     if (justCompleted) {
         setTimeout(() => {
             openRewardModal();
         }, 1000);
     }
 }
-
 
 // ====== CRUD E TELAS ======
 function triggerNotif(task) {
@@ -299,6 +354,7 @@ function openInput() {
     document.getElementById('in-name').value = '';
     document.getElementById('in-time').value = '';
     document.getElementById('in-priority').checked = false;
+    document.getElementById('in-pearl').checked = false; 
     
     resetDays(); 
 
@@ -348,11 +404,20 @@ function handleSave() {
         }
     } else {
         const rawNote = document.getElementById('in-note').value;
+        const isPearl = document.getElementById('in-pearl').checked;
+        
         if (!rawNote) return;
         
         const colors = ['#FFF5F5', '#F3F0FF', '#EBFBEE', '#FFF9DB'];
-        appData.notes.push({ id: Date.now(), content: rawNote, color: colors[Math.floor(Math.random() * colors.length)] });
+        appData.notes.push({ 
+            id: Date.now(), 
+            content: rawNote, 
+            color: colors[Math.floor(Math.random() * colors.length)],
+            isPearl: isPearl 
+        });
+        
         document.getElementById('in-note').value = '';
+        document.getElementById('in-pearl').checked = false;
     }
     
     save(); 
@@ -454,34 +519,21 @@ function render() {
     else if (activeTab === 'notes') {
         const container = document.getElementById('list-notes');
         container.innerHTML = '';
-        document.getElementById('note-count').innerText = `${appData.notes.length} notas`;
+        document.getElementById('note-count').innerText = `${appData.notes.length} itens`;
         
-        appData.notes.forEach(n => {
+ appData.notes.forEach(n => {
             const safeContent = sanitizeHTML(n.content);
             const el = document.createElement('div');
-            el.className = "p-6 rounded-[2rem] shadow-sm flex justify-between items-start border border-black/5";
-            el.style.backgroundColor = n.color;
-            el.innerHTML = `
-                <p class="font-bold text-gray-700 whitespace-pre-wrap flex-1">${safeContent}</p>
-                <button onclick="deleteItem(${n.id}, 'notes')" class="text-gray-400 opacity-50 ml-4">✕</button>
-            `;
-            container.appendChild(el);
-        });
-    } 
-    else {
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const limitDateStr = sevenDaysAgo.toISOString().split('T')[0];
-
-        const recentTasks = appData.tasks.filter(t => t.date >= limitDateStr);
-        const todayTasks = appData.tasks.filter(t => t.date === today);
-
-        const totalDoneWeek = recentTasks.filter(t => t.done).length;
-        
-        document.getElementById('total-done-week').innerText = totalDoneWeek;
-        document.getElementById('stat-pending').innerText = todayTasks.filter(t => !t.done).length;
-        document.getElementById('stat-done').innerText = todayTasks.filter(t => t.done).length;
-    }
-}
-
-updateTime();
+            
+            if (n.isPearl) {
+                el.className = "p-6 rounded-[2rem] shadow-sm flex justify-between items-start border border-yellow-200 bg-gradient-to-tr from-yellow-50 to-orange-50 relative overflow-hidden";
+                el.innerHTML = `
+                    <div class="absolute -right-3 -top-3 text-7xl opacity-20">🧸</div>
+                    <div class="flex-1 z-10 pr-4">
+                        <span class="text-[9px] font-black text-yellow-500 uppercase tracking-widest mb-2 block">✨ Pérola Inesquecível</span>
+                        <p class="font-bold text-yellow-900 whitespace-pre-wrap">${safeContent}</p>
+                    </div>
+                    <button onclick="deleteItem(${n.id}, 'notes')" class="text-yellow-400 opacity-60 hover:opacity-100 ml-2 z-10 text-xl">✕</button>
+                `;
+            } else {
+                el.className = "p-6 rounded-[2rem] shadow-sm flex justify-between items-start 
