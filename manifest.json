@@ -1,13 +1,13 @@
 {
-  "name": "Meu App",
-  "short_name": "App",
-  "start_url": "/index.html",
+  "name": "App da Mãe",
+  "short_name": "AppMãe",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
       "sizes": "192x192",
       "type": "image/png"
     }
