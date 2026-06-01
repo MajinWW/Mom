@@ -536,4 +536,30 @@ function render() {
                     <button onclick="deleteItem(${n.id}, 'notes')" class="text-yellow-400 opacity-60 hover:opacity-100 ml-2 z-10 text-xl">✕</button>
                 `;
             } else {
-                el.className = "p-6 rounded-[2rem] shadow-sm flex justify-between items-start 
+                el.className = "p-6 rounded-[2rem] shadow-sm flex justify-between items-start border border-black/5";
+                el.style.backgroundColor = n.color;
+                el.innerHTML = `
+                    <p class="font-bold text-gray-700 whitespace-pre-wrap flex-1">${safeContent}</p>
+                    <button onclick="deleteItem(${n.id}, 'notes')" class="text-gray-400 opacity-50 ml-4 text-xl">✕</button>
+                `;
+            }
+            container.appendChild(el);
+        });
+    } 
+    else {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const limitDateStr = sevenDaysAgo.toISOString().split('T')[0];
+
+        const recentTasks = appData.tasks.filter(t => t.date >= limitDateStr);
+        const todayTasks = appData.tasks.filter(t => t.date === today);
+
+        const totalDoneWeek = recentTasks.filter(t => t.done).length;
+        
+        document.getElementById('total-done-week').innerText = totalDoneWeek;
+        document.getElementById('stat-pending').innerText = todayTasks.filter(t => !t.done).length;
+        document.getElementById('stat-done').innerText = todayTasks.filter(t => t.done).length;
+    }
+}
+
+updateTime();
