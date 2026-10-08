@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MomCare Ultra v4</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body class="min-h-screen pb-28">
+    <audio id="notif-sound" loop src="https://assets.mixkit.co/active_storage/sfx/2855/2855-preview.mp3"></audio>
+    <audio id="done-sound" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
+
+    <!-- Tela de Desbloqueio -->
+    <div id="unlock-screen" class="fixed inset-0 bg-white z-[300] flex flex-col items-center justify-center p-10 text-center transition-all duration-700">
+        <div class="relative mb-8">
+            <div class="w-32 h-32 bg-pink-50 rounded-[3rem] rotate-12 absolute animate-pulse"></div>
+            <div class="w-32 h-32 bg-pink-100 rounded-[3rem] flex items-center justify-center relative shadow-inner">
+                <span class="text-6xl">✨</span>
+            </div>
+        </div>
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 tracking-tighter">MomCare Ultra</h1>
+        <p class="text-gray-400 mb-10 text-sm leading-relaxed">Sua carga mental organizada em um só lugar.</p>
+        <button onclick="startApp()" class="w-full max-w-xs bg-gray-900 text-white py-5 rounded-[2rem] font-bold shadow-2xl active:scale-95 transition-transform uppercase tracking-widest text-xs">
+            Aqui Mamãe
+        </button>
+    </div>
+
+    <!-- Cabeçalho -->
+    <header class="p-8 sticky top-0 z-50 bg-[#FFF9FA]/90 backdrop-blur-lg border-b border-pink-50/50">
+        <div class="flex justify-between items-center mb-8 max-w-lg mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-400 to-pink-200 flex items-center justify-center text-white shadow-lg">
+                    <span id="user-icon">🌸</span>
+                </div>
+                <div>
+                    <h2 id="greeting-txt" class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Bom dia</h2>
+                    <h1 class="text-xl font-extrabold text-gray-900 leading-tight">Olá, Mamãe</h1>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col items-end">
+                    <span id="top-clock" class="text-2xl font-black text-gray-900 tracking-tighter">00:00</span>
+                    <span class="text-[9px] font-bold text-pink-400 uppercase tracking-widest" id="top-date">Sexta, 03 Abr</span>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="flex justify-around items-center max-w-md mx-auto relative">
+            <button onclick="changeTab('tasks')" id="btn-tasks" class="tab-btn active text-xs font-black uppercase tracking-widest">📅 Rotina</button>
+            <button onclick="changeTab('notes')" id="btn-notes" class="tab-btn text-xs font-black uppercase tracking-widest">📝 Notas</button>
+            <button onclick="changeTab('stats')" id="btn-stats" class="tab-btn text-xs font-black uppercase tracking-widest">📊 Metas</button>
+        </nav>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-lg mx-auto px-6 py-6 space-y-8">
+        
+        <!-- Aba: Tarefas / Rotina -->
+        <section id="tab-tasks-content" class="space-y-6">
+            
+            <!-- Progresso de Tarefas -->
+            <div class="glass p-6 rounded-[2.5rem] shadow-premium">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Energia de Hoje</span>
+                    <span id="perc-num" class="text-2xl font-black text-pink-500">0%</span>
+                </div>
+                <div class="w-full bg-pink-50 h-4 rounded-full overflow-hidden p-1 shadow-inner">
+                    <div id="perc-bar" class="progress-fill h-full rounded-full w-0"></div>
+                </div>
+            </div>
+            
+            <!-- Lista de Tarefas -->
+            <div id="list-tasks" class="space-y-4"></div>
+
+            <div class="text-center mt-6">
+                <button id="btn-toggle-completed" onclick="toggleCompleted()" class="hidden text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white border border-gray-200 px-5 py-3 rounded-full mx-auto active:scale-95 transition-all shadow-sm">
+                    Mostrar Concluídas
+                </button>
+            </div>
+
+            <div id="list-tasks-completed" class="hidden space-y-4 opacity-70"></div>
+        </section>
+
+        <!-- Aba: Notas e Pérolas -->
+        <section id="tab-notes-content" class="hidden space-y-6 animate-item">
+            <div class="flex justify-between items-center px-2">
+                <h3 class="text-lg font-extrabold text-gray-800 tracking-tight">Cápsula de Memórias</h3>
+                <span class="text-[10px] font-bold text-pink-400 uppercase tracking-widest" id="note-count">0 itens</span>
+            </div>
+            <div id="list-notes" class="grid grid-cols-1 gap-4"></div>
+        </section>
+
+        <!-- Aba: Estatísticas -->
+        <section id="tab-stats-content" class="hidden space-y-6 animate-item">
+            <div class="glass p-8 rounded-[2.5rem] text-center shadow-premium mb-6">
+                <div class="text-5xl mb-4">🏆</div>
+                <h3 class="text-xl font-extrabold text-gray-900 mb-2">Sua Produtividade</h3>
+                <p class="text-sm text-gray-400 mb-6">Você concluiu <span id="total-done-week" class="text-pink-500 font-bold">0</span> tarefas nos últimos 7 dias!</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-pink-50 p-4 rounded-3xl">
+                        <span class="block text-xl font-black text-pink-500" id="stat-pending">0</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase">Pendentes Hoje</span>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-3xl">
+                        <span class="block text-xl font-black text-blue-500" id="stat-done">0</span>
+                        <span class="text-[9px] font-bold text-gray-400 uppercase">Feitas Hoje</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOVO: Botão Premium do Resumo -->
+            <button onclick="openSummary()" class="w-full relative overflow-hidden rounded-[2.5rem] p-8 shadow-2xl active:scale-95 transition-all group" style="background: linear-gradient(135deg, #F6D365 0%, #FDA085 100%);">
+                <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                <div class="relative z-10 flex flex-col items-center">
+                    <span class="text-5xl mb-3 group-hover:scale-110 transition-transform">✨</span>
+                    <h3 class="text-2xl font-black text-white uppercase tracking-widest mb-1 drop-shadow-md">Seu Resumo</h3>
+                    <p class="text-sm font-bold text-white/90 drop-shadow-sm">Veja a mágica que você fez esta semana</p>
+                </div>
+            </button>
+        </section>
+    </main>
+
+    <!-- NOVO: Modal "Resumo da Supermãe" (Estilo Spotify Wrapped) -->
+    <div id="summary-modal" class="fixed inset-0 z-[700] hidden flex-col items-center justify-center text-center transition-all duration-700 bg-gray-900 overflow-hidden">
+        
+        <!-- Slide 1: Abertura -->
+        <div id="summary-slide-1" class="absolute inset-0 flex flex-col items-center justify-center p-10 opacity-0 pointer-events-none transition-opacity duration-1000 bg-gradient-to-br from-indigo-900 via-purple-900 to-black text-white">
+            <span class="text-7xl mb-8 animate-bounce">🪄</span>
+            <h2 class="text-4xl font-black mb-4 tracking-tighter">Preparando sua mágica...</h2>
+            <p class="text-gray-300 font-bold text-lg">Calculando todo o trabalho invisível que você fez nos bastidores.</p>
+        </div>
+        
+        <!-- Slide 2: Tarefas -->
+        <div id="summary-slide-2" class="absolute inset-0 flex flex-col items-center justify-center p-10 opacity-0 pointer-events-none transition-opacity duration-1000 bg-gradient-to-br from-pink-900 via-red-900 to-black text-white">
+            <span class="text-8xl mb-8">🏆</span>
+            <h2 class="text-7xl font-black mb-2 text-pink-300 drop-shadow-lg" id="sum-tasks">0</h2>
+            <h3 class="text-2xl font-black mb-6 uppercase tracking-widest text-pink-200">Tarefas Concluídas</h3>
+            <p class="text-gray-200 font-bold text-xl leading-relaxed">Nesta semana, você resolveu tudo isso. O seu esforço é o que faz esta casa girar!</p>
+        </div>
+        
+        <!-- Slide 3: Pérolas -->
+        <div id="summary-slide-3" class="absolute inset-0 flex flex-col items-center justify-center p-10 opacity-0 pointer-events-none transition-opacity duration-1000 bg-gradient-to-br from-yellow-900 via-orange-900 to-black text-white">
+            <span class="text-8xl mb-8">🧸</span>
+            <h2 class="text-7xl font-black mb-2 text-yellow-300 drop-shadow-lg" id="sum-pearls">0</h2>
+            <h3 class="text-2xl font-black mb-6 uppercase tracking-widest text-yellow-200">Pérolas Guardadas</h3>
+            <p class="text-gray-200 font-bold text-xl leading-relaxed">Pequenos momentos de amor e risadas que você salvou para aquecer o coração no futuro.</p>
+        </div>
+
+        <!-- Slide 4: Finalização -->
+        <div id="summary-slide-4" class="absolute inset-0 flex flex-col items-center justify-center p-10 opacity-0 pointer-events-none transition-opacity duration-1000 bg-gradient-to-br from-blue-900 via-teal-900 to-black text-white">
+            <span class="text-8xl mb-8">👑</span>
+            <h2 class="text-5xl font-black mb-6 leading-tight tracking-tighter">Você é uma<br><span class="text-blue-300">Supermãe!</span></h2>
+            <p class="text-blue-100 font-bold text-xl leading-relaxed mb-12">Não importa o que digam ou como foi o seu dia: você fez o seu melhor e nós estamos orgulhosos.</p>
+            <button onclick="closeSummary()" class="bg-white text-blue-900 px-10 py-5 rounded-[2rem] font-black uppercase tracking-widest shadow-2xl active:scale-95 transition-transform text-sm">
+                Guardar no coração ❤️
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Recompensa do Autocuidado -->
+    <div id="reward-modal" class="fixed inset-0 bg-gray-900/30 backdrop-blur-sm z-[400] hidden items-end sm:items-center justify-center transition-all">
+        <div class="bg-white w-full max-w-md rounded-t-[3.5rem] p-10 shadow-2xl animate-item text-center">
+            <div class="w-16 h-1.5 bg-gray-100 rounded-full mx-auto mb-6"></div>
+            
+            <div class="text-6xl mb-4 gear-spin">🌸</div>
+            <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tighter">Muito bem, mamãe!</h3>
+            <p id="reward-msg" class="text-sm font-bold text-gray-400 mb-8 leading-relaxed">Você está cuidando de tudo com tanto amor. Agora, é a sua vez de receber um pouquinho desse carinho.</p>
+            
+            <div class="bg-blue-50 p-5 rounded-3xl mb-5">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-bold text-gray-700">Hidrate-se um pouco</span>
+                    <span id="water-count-text" class="text-xs font-black text-blue-500 bg-white px-2 py-1 rounded-full shadow-sm">0/8 copos</span>
+                </div>
+                <div class="flex justify-between px-1" id="water-glasses-container"></div>
+            </div>
+
+            <button onclick="openBreather()" class="w-full bg-blue-500 text-white py-5 rounded-[1.8rem] font-black shadow-xl shadow-blue-200 mb-4 active:scale-95 transition-all text-sm tracking-wider uppercase">
+                🧘‍♀️ Pausa de 5 Minutos
+            </button>
+
+            <button onclick="closeRewardModal()" class="w-full py-4 text-gray-400 font-bold uppercase text-[10px] tracking-widest active:scale-95 transition-all">
+                Continuar minha jornada
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Pausa/Respiro -->
+    <div id="breather-modal" class="fixed inset-0 bg-white/95 backdrop-blur-md z-[600] hidden flex-col items-center justify-center p-10 text-center transition-all duration-500">
+        <div class="w-40 h-40 bg-gradient-to-tr from-blue-100 to-pink-100 rounded-full flex items-center justify-center mb-10 breather-pulse shadow-inner border border-white">
+            <span class="text-6xl">🧘‍♀️</span>
+        </div>
+        <h2 class="text-6xl font-black text-gray-900 mb-6 tracking-tighter" id="breather-timer">05:00</h2>
+        <p class="text-gray-500 mb-12 text-lg leading-relaxed font-bold px-4 italic" id="breather-quote">"Respire fundo. Você está fazendo um trabalho incrível."</p>
+        <button onclick="closeBreather()" class="w-full max-w-xs bg-gray-900 text-white py-5 rounded-[2rem] font-bold shadow-2xl active:scale-95 transition-all tracking-widest text-xs uppercase">
+            Encerrar Pausa
+        </button>
+    </div>
+
+    <!-- Modal de Notificação Alarme -->
+    <div id="notif-modal" class="fixed inset-0 bg-white/95 z-[500] hidden items-center justify-center p-10 text-center transition-all">
+        <div class="max-w-xs w-full">
+            <div class="w-24 h-24 bg-pink-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl animate-bounce">
+                <span class="text-4xl text-white">🔔</span>
+            </div>
+            <h2 id="notif-title" class="text-3xl font-extrabold text-gray-900 mb-10 tracking-tighter">Tarefa Agora!</h2>
+            <button onclick="dismissNotif()" class="w-full bg-gray-900 text-white py-6 rounded-[2rem] font-bold shadow-xl active:scale-95 transition-all">ESTOU CIENTE</button>
+        </div>
+    </div>
+
+    <!-- Botão Flutuante (Nova Tarefa/Nota) -->
+    <button onclick="openInput()" class="fixed bottom-10 right-10 w-16 h-16 bg-pink-500 text-white rounded-[1.8rem] flex items-center justify-center text-4xl z-[100] shadow-2xl active:scale-90 transition-transform font-bold">
+        +
+    </button>
+
+    <!-- Modal de Formulário -->
+    <div id="modal-form" class="fixed inset-0 bg-gray-900/20 backdrop-blur-sm z-[200] hidden items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-md rounded-t-[3.5rem] p-10 shadow-2xl animate-item max-h-[90vh] overflow-y-auto">
+            <div class="w-16 h-1.5 bg-gray-100 rounded-full mx-auto mb-8"></div>
+            
+            <input type="hidden" id="edit-task-id" value="">
+
+            <div id="fields-task">
+                <h3 id="modal-task-title" class="text-2xl font-black text-gray-900 mb-6 tracking-tighter">Nova Atividade</h3>
+                
+                <input type="text" id="in-name" placeholder="O que precisa ser feito?" class="w-full bg-gray-50 border-none rounded-2xl p-5 mb-4 font-bold outline-none focus:ring-2 focus:ring-pink-300">
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 px-2">Horário</label>
+                        <input type="time" id="in-time" class="w-full bg-gray-50 border-none rounded-2xl p-5 font-black text-pink-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 px-2">Categoria</label>
+                        <select id="in-cat" class="w-full bg-gray-50 border-none rounded-2xl p-5 text-gray-500 font-bold outline-none">
+                            <option value="casa">Casa 🏠</option>
+                            <option value="filhos">Filhos 👶</option>
+                            <option value="eu">Pessoal 🌸</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-5 rounded-2xl mb-4 mt-2">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">Repetir nos dias:</span>
+                    <div class="flex justify-between items-center gap-1">
+                        <button type="button" onclick="toggleDay(this)" data-day="0" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">D</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="1" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">S</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="2" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">T</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="3" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">Q</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="4" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">Q</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="5" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">S</button>
+                        <button type="button" onclick="toggleDay(this)" data-day="6" class="day-btn w-9 h-9 rounded-full border-2 border-transparent bg-white text-gray-400 font-bold text-xs shadow-sm">S</button>
+                    </div>
+                </div>
+
+                <label class="flex items-center gap-3 px-2 cursor-pointer mt-2">
+                    <input type="checkbox" id="in-priority" class="w-5 h-5 accent-pink-500">
+                    <span class="text-sm font-bold text-gray-500">Marcar como Importante ✨</span>
+                </label>
+            </div>
+
+            <div id="fields-note" class="hidden">
+                <h3 class="text-2xl font-black text-gray-900 mb-6 tracking-tighter">Anotação ou Memória</h3>
+                <textarea id="in-note" rows="5" placeholder="Lista de compras, ou algo fofo que a criança fez hoje..." class="w-full bg-gray-50 border-none rounded-2xl p-5 font-bold outline-none resize-none mb-4 focus:ring-2 focus:ring-pink-300"></textarea>
+                
+                <label class="flex items-center gap-3 p-4 cursor-pointer bg-yellow-50 rounded-2xl border border-yellow-200 shadow-sm transition-all active:scale-95">
+                    <input type="checkbox" id="in-pearl" class="w-5 h-5 accent-yellow-500">
+                    <span class="text-sm font-bold text-yellow-700">Guardar como Pérola Inesquecível 🧸✨</span>
+                </label>
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button onclick="closeInput()" class="flex-1 py-5 text-gray-400 font-bold uppercase text-[10px] tracking-widest">Sair</button>
+                <button onclick="handleSave()" class="flex-1 bg-pink-500 text-white py-5 rounded-[1.8rem] font-black shadow-xl shadow-pink-200">Salvar</button>
+            </div>
+        </div>
+    </div>
+    <link rel="manifest" href="manifest.json">
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+    </script>
+    
+</body>
+    </html>
+    

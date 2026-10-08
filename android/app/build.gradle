@@ -1,0 +1,12 @@
+plugins { id 'com.android.application' }
+android {
+ namespace 'com.majinww.momcare'
+ compileSdk 35
+ defaultConfig { applicationId 'com.majinww.momcare'; minSdk 26; targetSdk 35; versionCode 5; versionName '5.0' }
+ sourceSets { main { assets.srcDirs = ['../../web'] } }
+}
+tasks.register('prepareWeb', Copy) {
+ from('../..') { include 'index.html', 'style.css', 'core.js', 'script.js', 'manifest.json', 'icon.svg' }
+ into('../../web')
+}
+tasks.named('preBuild').configure { dependsOn('prepareWeb') }
